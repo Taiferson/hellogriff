@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HELOISA HELLO GRIFF | PREMIUM GRIFF</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&family=Tenor+Sans&display=swap');
+
+        :root {
+            --bg-site: #f8f8f8; 
+            --bg-card: #ffffff;
+            --detalhe-silver: #d1d1d1;
+            --texto-chumbo: #222222;
+            --accent-silver: #a0a0a0;
+            --mp-color: #009ee3;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --error-color: #e74c3c;
+            --whatsapp-color: #25D366;
+        }
+
+        body {
+            background-color: var(--bg-site);
+            color: var(--texto-chumbo);
+            font-family: 'Montserrat', sans-serif;
+            margin: 0; padding: 0;
+            overflow-x: hidden;
+        }
+
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 5%; background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px); border-bottom: 1px solid var(--detalhe-silver);
+            position: sticky; top: 0; z-index: 1000;
+        }
+
+        .brand-name {
+            font-family: 'Tenor Sans', sans-serif; 
+            font-size: clamp(1.1rem, 4vw, 1.5rem);
+            letter-spacing: 4px; text-transform: uppercase;
+        }
+
+        .nav-tools { display: flex; align-items: center; gap: 15px; }
+        .nav-tools a { color: var(--texto-chumbo); font-size: 1.1rem; }
+
+        .cart-btn { position: relative; cursor: pointer; font-size: 1.2rem; }
+        #cart-badge {
+            position: absolute; top: -8px; right: -8px;
+            background: var(--texto-chumbo); color: #fff;
+            font-size: 9px; padding: 2px 5px; border-radius: 50%;
+        }
+
+        .products-grid {
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 25px; padding: 30px 5%; max-width: 1400px; margin: auto;
+        }
+
+        @media (max-width: 350px) {
+            .products-grid { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--bg-card); position: relative; overflow: hidden;
+            transition: 0.4s ease; border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .card-img-container {
+            width: 100%; 
+            height: 320px; 
+            overflow: hidden;
+            position: relative;
+            background: linear-gradient(45deg, #f5f5f5, #e8e8e8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+        
+        .card:hover .card-img { 
+            transform: scale(1.05); 
+        }
+
+        .card-info { 
+            padding: 18px; 
+            text-align: center; 
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .card-info h3 { 
+            font-size: 0.95rem; 
+            margin: 0 0 8px 0;
+            height: 42px; 
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            line-height: 1.3;
+        }
+        
+        .card-info p { 
+            font-weight: 700; 
+            margin: 5px 0 12px 0; 
+            font-size: 1.1rem; 
+            color: #222;
+        }
+        
+        .buy-btn {
+            background: var(--texto-chumbo); 
+            color: #fff; 
+            border: none;
+            width: 100%; 
+            padding: 14px; 
+            font-weight: 700; 
+            letter-spacing: 1px;
+            cursor: pointer; 
+            margin-top: 5px; 
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+        }
+        
+        .buy-btn:hover { 
+            background: #333; 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .btn-mercadopago {
+            background: var(--mp-color); 
+            color: #fff; 
+            border: none;
+            width: 100%; 
+            padding: 14px; 
+            font-weight: 700; 
+            letter-spacing: 1px;
+            cursor: pointer; 
+            margin-top: 10px; 
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-mercadopago:hover { 
+            background: #0088cc; 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 158, 227, 0.2);
+        }
+        
+        .btn-mercadopago i { font-size: 1.1rem; }
+
+        @media (min-width: 1024px) {
+            .buy-overlay {
+                position: absolute; 
+                bottom: 70px; 
+                left: 0; 
+                right: 0;
+                padding: 20px; 
+                opacity: 0; 
+                transition: 0.3s;
+            }
+            
+            .card:hover .buy-overlay { 
+                opacity: 1; 
+                bottom: 80px; 
+            }
+            
+            .card:hover { 
+                transform: translateY(-8px); 
+                box-shadow: 0 15px 30px rgba(0,0,0,0.08); 
+            }
+            
+            .buy-btn, .btn-mercadopago { 
+                width: 85%; 
+                margin: 0 auto; 
+                display: block; 
+            }
+        }
+
+        /* Carrinho Lateral */
+        #modal-cart {
+            display: none; 
+            position: fixed; 
+            inset: 0;
+            background: rgba(0,0,0,0.5); 
+            z-index: 2000; 
+            justify-content: flex-end;
+        }
+
+        .modal-box {
+            background: white; 
+            width: 85%; 
+            max-width: 420px; 
+            height: 100%;
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            box-sizing: border-box; 
+            overflow-y: auto;
+        }
+
+        .cart-content-scroll { 
+            flex: 1; 
+            overflow-y: auto; 
+            margin: 15px 0;
+            padding: 10px 0;
+            min-height: 300px;
+        }
+
+        .cart-item {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start;
+            padding: 20px 0;
+            border-bottom: 1px solid #f0f0f0; 
+            font-size: 1rem;
+            position: relative;
+            min-height: 110px;
+        }
+
+        .item-details { 
+            flex: 1; 
+            margin-right: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .item-name { 
+            font-weight: bold; 
+            margin-bottom: 8px;
+            font-size: 1rem;
+            line-height: 1.3;
+        }
+        
+        .item-price { 
+            color: #666; 
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+        
+        .item-total {
+            color: #222; 
+            font-weight: bold; 
+            font-size: 1rem;
+            background-color: #f8f8f8;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        
+        .qty-controls { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px;
+            background: #f8f8f8; 
+            padding: 10px 15px;
+            border-radius: 25px;
+            min-width: 130px;
+            justify-content: center;
+            height: fit-content;
+            margin-top: 5px;
+        }
+        
+        .btn-qty { 
+            border: none; 
+            background: #fff; 
+            width: 32px;
+            height: 32px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            border-radius: 50%; 
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-size: 1.1rem;
+            color: #333;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-qty:hover { 
+            background: #eee; 
+            transform: scale(1.1);
+        }
+        
+        .qty-number { 
+            min-width: 35px;
+            text-align: center; 
+            font-weight: bold; 
+            font-size: 1.1rem;
+        }
+        
+        .remove-item {
+            position: absolute; 
+            top: 15px;
+            right: 0;
+            background: none; 
+            border: none; 
+            color: #ff4444; 
+            cursor: pointer;
+            font-size: 1.1rem;
+            width: 25px;
+            height: 25px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .remove-item:hover { 
+            color: #ff0000; 
+            transform: scale(1.2);
+        }
+
+        .empty-cart {
+            text-align: center; 
+            padding: 40px 20px; 
+            color: #999;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+        
+        .empty-cart i { 
+            font-size: 3.5rem;
+            margin-bottom: 20px; 
+            opacity: 0.5; 
+        }
+        
+        .empty-cart p { 
+            margin: 0; 
+            font-size: 1rem;
+        }
+
+        .cart-header {
+            display:flex; 
+            justify-content:space-between; 
+            align-items:center; 
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .cart-header h2 {
+            font-family:'Tenor Sans'; 
+            margin:0; 
+            font-size:1.4rem;
+            font-weight: bold;
+        }
+
+        .checkout-form h4 { 
+            font-size: 0.8rem;
+            margin: 20px 0 10px;
+            color: var(--accent-silver); 
+            text-transform: uppercase;
+        }
+        
+        .checkout-input {
+            width: 100%; 
+            padding: 14px 0;
+            margin-bottom: 12px;
+            border: none; 
+            border-bottom: 1px solid #eee; 
+            outline: none; 
+            font-size: 0.95rem;
+            background: transparent;
+        }
+        
+        .checkout-input:focus { 
+            border-bottom-color: #222; 
+            border-bottom-width: 2px;
+        }
+        
+        .form-row { 
+            display: flex; 
+            gap: 12px;
+            margin-bottom: 12px; 
+}
+        
+        .form-row .checkout-input { 
+            margin-bottom: 0; 
+        }
+
+        .btn-final {
+            background: #000; 
+            color: #fff; 
+            width: 100%; 
+            padding: 20px;
+            border: none; 
+            font-weight: 700; 
+            cursor: pointer; 
+            margin-top: 25px;
+            font-size: 1rem;
+            letter-spacing: 1.5px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-final:hover { 
+            background: #333; 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .payment-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .frete-section { 
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .cep-input { 
+            display: flex; 
+            gap: 12px;
+        }
+        
+        .cep-input input { 
+            flex: 1; 
+            font-size: 0.95rem;
+        }
+        
+        .btn-calcular { 
+            background: #333; 
+            color: white; 
+            border: none; 
+            padding: 12px 20px;
+            cursor: pointer; 
+            font-size: 0.85rem;
+            border-radius: 4px;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-calcular:disabled { 
+            background: #ccc; 
+            cursor: not-allowed; 
+        }
+        
+        .btn-calcular:hover:not(:disabled) { 
+            background: #222; 
+            transform: translateY(-1px);
+        }
+        
+        .loading { 
+            display: none; 
+            font-size: 0.9rem;
+            color: #666;
+            padding: 12px 0;
+        }
+        
+        .opcoes-frete { 
+            margin-top: 15px;
+        }
+        
+        .opcao-frete {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #eee; 
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer; 
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+        
+        .opcao-frete:hover { 
+            border-color: #222; 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        
+        .opcao-frete.selected { 
+            background-color: #f8f8f8; 
+            border-color: #222;
+            border-width: 2px;
+        }
+        
+        .frete-info { 
+            flex: 1; 
+        }
+        
+        .frete-nome { 
+            font-weight: bold; 
+            font-size: 0.95rem;
+        }
+        
+        .frete-prazo { 
+            color: #666; 
+            font-size: 0.85rem;
+            margin-top: 4px; 
+        }
+        
+        .frete-valor { 
+            font-weight: bold; 
+            white-space: nowrap;
+            font-size: 1rem;
+        }
+
+        .order-summary {
+            margin-top: 25px; 
+            padding: 20px;
+            background: #f9f9f9; 
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        
+        .summary-row {
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+        
+        .summary-total {
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 1.2rem;
+            font-weight: bold; 
+            margin-top: 15px; 
+            padding-top: 15px; 
+            border-top: 2px solid #eee;
+        }
+
+        footer { 
+            background: #fff; 
+            padding: 40px 5%; 
+            border-top: 1px solid #eee; 
+        }
+        
+        .footer-grid {
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 30px;
+        }
+        
+        .faq-item { 
+            border-bottom: 1px solid #f9f9f9; 
+            padding: 15px 0;
+            font-size: 0.9rem;
+            cursor: pointer; 
+        }
+        
+        .faq-answer { 
+            display: none; 
+            font-size: 0.85rem;
+            color: #888; 
+            padding-top: 10px;
+        }
+
+        .cart-icon-large {
+            font-size: 4rem;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .cart-item {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 15px 0;
+            }
+            
+            .item-details {
+                margin-right: 0;
+                margin-bottom: 15px;
+                width: 100%;
+            }
+            
+            .qty-controls {
+                align-self: flex-start;
+            }
+            
+            .remove-item {
+                top: 10px;
+                right: 0;
+            }
+            
+            .modal-box {
+                width: 95%;
+                padding: 15px;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .cart-item {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Status de pagamento */
+        .payment-status {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 4000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .payment-status.success {
+            background: rgba(46, 204, 113, 0.97);
+        }
+        
+        .payment-status.error {
+            background: rgba(231, 76, 60, 0.97);
+        }
+        
+        .payment-status.whatsapp {
+            background: rgba(37, 211, 102, 0.97);
+        }
+        
+        .status-icon {
+            font-size: 5rem;
+            margin-bottom: 25px;
+            animation: bounce 1s ease infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .status-message {
+            font-size: 1.4rem;
+            margin-bottom: 30px;
+            max-width: 600px;
+            line-height: 1.5;
+            font-weight: 600;
+        }
+        
+        .status-details {
+            background: rgba(255,255,255,0.15);
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 25px;
+            max-width: 600px;
+            text-align: left;
+            font-size: 0.95rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .whatsapp-redirect {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 18px 35px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 30px;
+            transition: all 0.3s ease;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.3);
+        }
+        
+        .whatsapp-redirect:hover {
+            background: #1da851;
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(37, 211, 102, 0.4);
+        }
+        
+        .payment-processing {
+            background: rgba(243, 156, 18, 0.97);
+        }
+        
+        .processing-spinner {
+            border: 6px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 6px solid white;
+            width: 70px;
+            height: 70px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 30px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .btn-close-status {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.4);
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            backdrop-filter: blur(5px);
+        }
+        
+        .btn-close-status:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.6);
+        }
+        
+        .order-number {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin: 15px 0;
+            display: inline-block;
+            letter-spacing: 1px;
+        }
+        
+        .important-note {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            border-left: 4px solid #ffd700;
+        }
+        
+        .btn-whatsapp-checkout {
+            background: var(--whatsapp-color);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-whatsapp-checkout:hover {
+            background: #1da851;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+        }
+        
+        .btn-whatsapp-checkout i {
+            font-size: 1.3rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="brand-name">HELOISA HELLO GRIFF</div>
+    <div class="nav-tools">
+        <a href="#" onclick="abrirWhatsAppSuporte()"><i class="fab fa-whatsapp"></i></a>
+        <a href="#" onclick="abrirInstagram()"><i class="fab fa-instagram"></i></a>
+        <div class="cart-btn" onclick="toggleCart()">
+            <i class="fas fa-shopping-cart"></i>
+            <span id="cart-badge">0</span>
+        </div>
+    </div>
+</header>
+
+<div class="products-grid" id="shop-grid">
+    <!-- Produtos serão carregados via JavaScript -->
+</div>
+
+<div id="modal-cart">
+    <div class="modal-box">
+        <div class="cart-header">
+            <h2>SEU CARRINHO</h2>
+            <i class="fas fa-times" onclick="toggleCart()" style="cursor:pointer; font-size:1.3rem;"></i>
+        </div>
+
+        <div class="cart-content-scroll" id="cart-content">
+            <!-- Itens do carrinho serão inseridos aqui -->
+        </div>
+
+        <div class="checkout-form">
+            <div class="frete-section">
+                <h4>Calcular Frete</h4>
+                <div class="cep-input">
+                    <input type="text" id="cep-input" class="checkout-input" placeholder="Digite seu CEP" maxlength="9">
+                    <button class="btn-calcular" onclick="calcularFreteReal()" id="btn-calcular">CALCULAR</button>
+                </div>
+                <div id="frete-loading" class="loading">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>Consultando fretes disponíveis...</span>
+                    </div>
+                </div>
+                <div id="opcoes-frete" class="opcoes-frete"></div>
+                <div id="frete-error" style="display:none; color:#e74c3c; font-size:0.9rem; margin-top:8px;"></div>
+            </div>
+
+            <h4>Seus Dados</h4>
+            <input type="text" id="c-nome" class="checkout-input" placeholder="Nome Completo *" required>
+            <input type="email" id="c-email" class="checkout-input" placeholder="E-mail *" required>
+            <input type="tel" id="c-tel" class="checkout-input" placeholder="Telefone/WhatsApp *" required>
+            
+            <h4>Endereço</h4>
+            <div style="font-size: 0.85rem; color: #666; margin-bottom: 12px; padding: 8px; background: #f9f9f9; border-radius: 4px;">
+                <i class="fas fa-info-circle"></i> Endereço será preenchido automaticamente pelo CEP
+            </div>
+            <input type="text" id="c-cep" class="checkout-input" placeholder="CEP *" readonly>
+            <div class="form-row">
+                <input type="text" id="c-num" class="checkout-input" placeholder="Número *" style="width:40%">
+                <input type="text" id="c-comp" class="checkout-input" placeholder="Complemento (opcional)" style="width:60%">
+            </div>
+
+            <div class="payment-buttons">
+                <button class="btn-mercadopago" onclick="checkoutMercadoPago()">
+                    <i class="fas fa-credit-card"></i> PAGAR COM MERCADO PAGO
+                </button>
+                <button class="btn-whatsapp-checkout" onclick="enviarPedidoWhatsApp()">
+                    <i class="fab fa-whatsapp"></i> FINALIZAR PEDIDO VIA WHATSAPP
+                </button>
+            </div>
+            
+            <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #009ee3;">
+                <p style="margin: 0; font-size: 0.85rem; color: #555;">
+                    <i class="fas fa-info-circle" style="color: #009ee3;"></i> 
+                    <strong>Como funciona:</strong> Após enviar o pedido pelo WhatsApp, você receberá o link de pagamento em minutos. Após o pagamento, envie o comprovante pelo mesmo WhatsApp.
+                </p>
+            </div>
+        </div>
+
+        <div class="order-summary">
+            <div class="summary-row">
+                <span>Subtotal:</span>
+                <span id="subtotal">R$ 0,00</span>
+            </div>
+            <div class="summary-row">
+                <span>Frete:</span>
+                <span id="frete-total">R$ 0,00</span>
+            </div>
+            <div class="summary-total">
+                <span>TOTAL:</span>
+                <span id="total-final">R$ 0,00</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="paymentStatus" class="payment-status">
+    <div class="processing-spinner" id="processingSpinner"></div>
+    <div id="statusIcon" class="status-icon"></div>
+    <h2 id="statusTitle" style="margin-bottom: 20px;"></h2>
+    <div id="statusMessage" class="status-message"></div>
+    <div id="statusDetails" class="status-details" style="display:none;"></div>
+    <button id="whatsappButton" class="whatsapp-redirect" style="display:none;" onclick="abrirWhatsAppPagamento()">
+        <i class="fab fa-whatsapp"></i> IR PARA WHATSAPP PARA PAGAMENTO
+    </button>
+    <div id="orderNumberDisplay" class="order-number" style="display:none;"></div>
+    <div id="importantNote" class="important-note" style="display:none;"></div>
+    <button id="closeStatusButton" class="btn-close-status" style="display:none;" onclick="closePaymentStatus()">
+        FECHAR
+    </button>
+</div>
+
+<footer>
+    <div class="footer-grid">
+        <div>
+            <h4 style="font-size:0.9rem; letter-spacing:1px;">SUPORTE</h4>
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <span>Rastreio de Pedido <i class="fas fa-chevron-down" style="font-size:0.8rem; float:right;"></i></span>
+                <p class="faq-answer">Enviamos o código via WhatsApp logo após a postagem nos Correios.</p>
+            </div>
+            <div class="faq-item" onclick="toggleFAQ(this)">
+                <span>Políticas de Troca <i class="fas fa-chevron-down" style="font-size:0.8rem; float:right;"></i></span>
+                <p class="faq-answer">Você tem até 7 dias para trocas por tamanho ou defeito de fábrica.</p>
+            </div>
+        </div>
+        <div>
+            <h4 style="font-size:0.9rem; letter-spacing:1px;">SEGURANÇA</h4>
+            <div style="font-size:1.5rem; gap:15px; display:flex; margin-bottom:10px;">
+                <i class="fab fa-cc-visa"></i> <i class="fab fa-cc-mastercard"></i> <i class="fas fa-pix"></i>
+            </div>
+            <p style="font-size:0.8rem; color:#999;">Ambiente criptografado e seguro para suas compras.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // CONFIGURAÇÕES (AJUSTE AQUI!)
+    const CONFIG = {
+        WHATSAPP_NUMBER: '5516999999999', // SEU NÚMERO DO WHATSAPP COM DDI (ex: 5516999999999)
+        WHATSAPP_SUPORTE: '5516999999999', // Número para suporte
+        INSTAGRAM_URL: 'https://instagram.com/sualoja',
+        MP_PUBLIC_KEY: 'APP_USR-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', // Sua Public Key do Mercado Pago
+        LOJA_NOME: 'HELOISA HELLO GRIFF',
+        LOJA_ENDERECO: 'Rua Augusto Honório, 992 - Franca/SP',
+        LOJA_TELEFONE: '(16) 99999-9999',
+        EMAIL_VENDAS: 'vendas@heloisagriff.com.br',
+        // Dimensões padrão dos produtos
+        DIMENSOES: {
+            altura: 10,   // cm
+            largura: 20,  // cm
+            comprimento: 30, // cm
+            peso: 1.0     // kg
+        }
+    };
+
+    // LISTA DE PRODUTOS (mantendo seus produtos)
+    const products = [
+        {id: 1, name: "Bolsa Antonella", price: 249.90, img: "https://drive.google.com/thumbnail?id=1wp3IW2H9BCIr_5QvDe4kHI_um5ZbAHGy&sz=w1000"},
+        {id: 2, name: "Bolsa Aurora", price: 259.90, img: "https://drive.google.com/thumbnail?id=1uWyOSpl9aShUzBTQ1tJT38FJry8vtf23&sz=w1000"},
+        {id: 3, name: "Bolsa Bella", price: 269.90, img: "https://drive.google.com/thumbnail?id=1aWeFzLUEXtH5XQLeuhuBGQLqN1RAzyyJ&sz=w1000"},
+        {id: 4, name: "Bolsa Bia", price: 279.90, img: "https://drive.google.com/thumbnail?id=1hiIWkD__rGEXLVgtMa-cxx6FKey_djyH&sz=w1000"},
+        {id: 5, name: "Bolsa Carmem", price: 289.90, img: "https://drive.google.com/thumbnail?id=1pa33tfa2438Wqkp4OMnBobASeP6jqiZE&sz=w1000"},
+        {id: 6, name: "Bolsa Chiara", price: 299.90, img: "https://drive.google.com/thumbnail?id=14m1D4f4_lDjVWn68WW7eKSC28U2ubvva&sz=w1000"},
+        {id: 7, name: "Bolsa Elisa", price: 309.90, img: "https://drive.google.com/thumbnail?id=1IjVr0XIoVXfll_4tJsTltlFM972FmM7Z&sz=w1000"},
+        {id: 8, name: "Bolsa Gaby", price: 319.90, img: "https://drive.google.com/thumbnail?id=1S_C8LLvtiGcJQ6zhpSHWqvst4FYD2yeg&sz=w1000"},
+        {id: 9, name: "Bolsa Griff", price: 329.90, img: "https://drive.google.com/thumbnail?id=1um_ruVTfOc64ixM92LC_gUiTrH8Zvt3a&sz=w1000"},
+        {id: 10, name: "Bolsa Helena", price: 339.90, img: "https://drive.google.com/thumbnail?id=1-zsY9LAwdd4jVvZk2BaEMGAbXm3CFm4M&sz=w1000"},
+        {id: 11, name: "Bolsa Hello", price: 349.90, img: "https://drive.google.com/thumbnail?id=1AEFkib7dzs1bZPfqLo663aBUmY7FOcLy&sz=w1000"},
+        {id: 12, name: "Bolsa Lais", price: 359.90, img: "https://drive.google.com/thumbnail?id=1kDFxzSKZn1ljFXx1cEZHt1b-8dSFXlGZ&sz=w1000"},
+        {id: 13, name: "Bolsa Lari", price: 369.90, img: "https://drive.google.com/thumbnail?id=1DPHD_Khcc0hgFumV_UR8I7mRT0cbAvRp&sz=w1000"},
+        {id: 14, name: "Bolsa Maya", price: 379.90, img: "https://drive.google.com/thumbnail?id=1zXtLttvLh2p5IM8Yn-lY-zi5wRCzTL6-&sz=w1000"},
+        {id: 15, name: "Bolsa Mia", price: 389.90, img: "https://drive.google.com/thumbnail?id=1zyZeFCfXDzR6tVoN48ZtoKLLYWlAywaE&sz=w1000"},
+        {id: 16, name: "Bolsa Suely", price: 399.90, img: "https://drive.google.com/thumbnail?id=1OjHY0EHewYGoz6N_Dwvew0fBXF9rKVvJ&sz=w1000"},
+        {id: 17, name: "Bolsa Valentina", price: 409.90, img: "https://drive.google.com/thumbnail?id=1ijRGne1D4V5APChcbtqvijNOQPdBYOue&sz=w1000"},
+        {id: 18, name: "Bolsa Vitoria", price: 419.90, img: "https://drive.google.com/thumbnail?id=1AUIImcXP6XwaqLEl_P6NvU5RK8nJNWf3&sz=w1000"},
+        {id: 19, name: "Carteira", price: 129.90, img: "https://drive.google.com/thumbnail?id=1Dayic6UtKTnq75a-clc2gzBGDOT7FtUB&sz=w1000"}
+    ];
+
+    // Adicionar dimensões padrão a todos os produtos
+    products.forEach(p => {
+        p.altura = CONFIG.DIMENSOES.altura;
+        p.largura = CONFIG.DIMENSOES.largura;
+        p.comprimento = CONFIG.DIMENSOES.comprimento;
+        p.peso = CONFIG.DIMENSOES.peso;
+    });
+
+    const fallbackImages = [
+        "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500&auto=format&fit=crop&q=60",
+        "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=500&auto=format&fit=crop&q=60",
+        "https://images.unsplash.com/photo-1547949003-9792a18a2601?w=500&auto=format&fit=crop&q=60"
+    ];
+
+    let cart = {};
+    let freteSelecionado = null;
+    let cepDestino = '';
+    let enderecoCliente = {};
+    let currentOrderId = null;
+    let mercadoPagoPreferenceId = null;
+
+    // FUNÇÕES PRINCIPAIS
+    function initStore() {
+        const grid = document.getElementById('shop-grid');
+        grid.innerHTML = '';
+        
+        products.forEach((p, index) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="card-img-container">
+                    <img src="${p.img}" 
+                         alt="${p.name}" 
+                         class="card-img" 
+                         loading="lazy"
+                         data-product-id="${p.id}"
+                         data-fallback-index="${index}">
+                </div>
+                <div class="buy-overlay">
+                    <button class="buy-btn" onclick="addToCart(${p.id})">ADICIONAR</button>
+                </div>
+                <div class="card-info">
+                    <h3>${p.name}</h3>
+                    <p>R$ ${p.price.toFixed(2).replace('.', ',')}</p>
+                    <button class="buy-btn" style="display:none;" id="mb-btn-${p.id}" onclick="addToCart(${p.id})">ADICIONAR</button>
+                </div>
+            `;
+            
+            grid.appendChild(card);
+        });
+        
+        setTimeout(() => {
+            const images = document.querySelectorAll('.card-img');
+            images.forEach((img, index) => {
+                const productId = parseInt(img.getAttribute('data-product-id'));
+                const fallbackIndex = parseInt(img.getAttribute('data-fallback-index'));
+                loadImageWithFallback(img, productId, fallbackIndex);
+            });
+            
+            if(window.innerWidth < 1024) {
+                products.forEach(p => {
+                    const btn = document.getElementById(`mb-btn-${p.id}`);
+                    if(btn) btn.style.display = 'block';
+                });
+            }
+        }, 100);
+    }
+
+    function addToCart(id) {
+        if (cart[id]) { 
+            cart[id].qty++; 
+        } else { 
+            const p = products.find(x => x.id === id); 
+            cart[id] = { ...p, qty: 1 }; 
+        }
+        renderCartUI();
+        updateModal();
+        updateTotais();
+        showNotification(`${products.find(x => x.id === id).name} adicionado ao carrinho!`);
+    }
+
+    function changeQty(id, delta) {
+        if (cart[id]) {
+            cart[id].qty += delta;
+            if (cart[id].qty <= 0) {
+                removeFromCart(id);
+            } else {
+                renderCartUI();
+                updateModal();
+                updateTotais();
+                if (cepDestino) calcularFreteReal();
+            }
+        }
+    }
+
+    function removeFromCart(id) {
+        const productName = cart[id]?.name || '';
+        delete cart[id];
+        renderCartUI();
+        updateModal();
+        updateTotais();
+        showNotification(`${productName} removido do carrinho!`);
+        if (cepDestino) calcularFreteReal();
+    }
+
+    function showNotification(message) {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #222;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            z-index: 9999;
+            font-size: 0.9rem;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        `;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    function renderCartUI() {
+        const totalItems = Object.values(cart).reduce((a, b) => a + b.qty, 0);
+        document.getElementById('cart-badge').innerText = totalItems;
+    }
+
+    function toggleCart() {
+        const m = document.getElementById('modal-cart');
+        m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
+        updateModal();
+        updateTotais();
+    }
+
+    function updateModal() {
+        const content = document.getElementById('cart-content');
+        content.innerHTML = "";
+        
+        if (Object.keys(cart).length === 0) {
+            content.innerHTML = `
+                <div class="empty-cart">
+                    <i class="fas fa-shopping-cart cart-icon-large"></i>
+                    <p style="font-size: 1.1rem; font-weight: bold; margin-bottom: 10px;">Seu carrinho está vazio</p>
+                    <p style="font-size:0.9rem; margin-top:10px; color: #888;">Adicione produtos clicando em "ADICIONAR"</p>
+                </div>`;
+            return;
+        }
+        
+        const cartItems = Object.values(cart);
+        
+        cartItems.forEach(item => {
+            const itemTotal = (item.price * item.qty).toFixed(2);
+            
+            const cartItemDiv = document.createElement('div');
+            cartItemDiv.className = 'cart-item';
+            cartItemDiv.innerHTML = `
+                <div class="item-details">
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-price">R$ ${item.price.toFixed(2).replace('.', ',')} cada</div>
+                    <div class="item-total">R$ ${itemTotal.replace('.', ',')} total</div>
+                </div>
+                <div class="qty-controls">
+                    <button class="btn-qty" onclick="changeQty(${item.id}, -1)">-</button>
+                    <span class="qty-number">${item.qty}</span>
+                    <button class="btn-qty" onclick="changeQty(${item.id}, 1)">+</button>
+                </div>
+                <button class="remove-item" onclick="removeFromCart(${item.id})" title="Remover item">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            content.appendChild(cartItemDiv);
+        });
+    }
+
+    function updateTotais() {
+        const subtotal = Object.values(cart).reduce((total, item) => total + (item.price * item.qty), 0);
+        const freteValor = freteSelecionado ? parseFloat(freteSelecionado.price) : 0;
+        const total = subtotal + freteValor;
+        
+        document.getElementById('subtotal').textContent = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+        document.getElementById('frete-total').textContent = freteSelecionado ? `R$ ${freteSelecionado.price.toFixed(2).replace('.', ',')}` : 'R$ 0,00';
+        document.getElementById('total-final').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+    }
+
+    // CÁLCULO DE FRETE REAL COM API DOS CORREIOS
+    async function calcularFreteReal() {
+        const cepInput = document.getElementById('cep-input');
+        let cep = cepInput.value.replace(/\D/g, '');
+        
+        if (cep.length !== 8) {
+            mostrarErroFrete("CEP inválido. Digite 8 números.");
+            return;
+        }
+        
+        if (Object.keys(cart).length === 0) {
+            mostrarErroFrete("Adicione produtos ao carrinho primeiro.");
+            return;
+        }
+        
+        cepDestino = cep;
+        cepInput.value = `${cep.substring(0,5)}-${cep.substring(5)}`;
+        
+        document.getElementById('btn-calcular').disabled = true;
+        document.getElementById('frete-loading').style.display = 'block';
+        document.getElementById('opcoes-frete').innerHTML = '';
+        document.getElementById('frete-error').style.display = 'none';
+        
+        try {
+            // 1. Consultar CEP para obter endereço
+            const viaCepResponse = await fetch(`https://viacep.com.br/ws/${cepDestino}/json/`);
+            const dadosCep = await viaCepResponse.json();
+            
+            if (dadosCep.erro) {
+                throw new Error("CEP não encontrado");
+            }
+            
+            document.getElementById('c-cep').value = dadosCep.cep;
+            
+            enderecoCliente = {
+                cep: dadosCep.cep,
+                rua: dadosCep.logradouro,
+                bairro: dadosCep.bairro,
+                cidade: dadosCep.localidade,
+                estado: dadosCep.uf
+            };
+            
+            // 2. Calcular dimensões totais do pedido
+            const dimensoes = calcularDimensoesPedido();
+            
+            // 3. Consultar API de fretes (usando serviço proxy ou cálculo direto)
+            const opcoes = await consultarFretesCorreios(dadosCep.uf, dimensoes);
+            
+            if (opcoes.length === 0) {
+                mostrarErroFrete("Nenhuma opção de frete disponível para este CEP.");
+                return;
+            }
+            
+            mostrarOpcoesFrete(opcoes);
+            
+        } catch (error) {
+            console.error("Erro ao calcular frete:", error);
+            // Fallback para valores padrão baseados na região
+            const opcoesPadrao = gerarOpcoesFretePadrao();
+            mostrarOpcoesFrete(opcoesPadrao);
+        } finally {
+            document.getElementById('btn-calcular').disabled = false;
+            document.getElementById('frete-loading').style.display = 'none';
+        }
+    }
+
+    function calcularDimensoesPedido() {
+        let pesoTotal = 0;
+        let volumeTotal = 0;
+        
+        Object.values(cart).forEach(item => {
+            const pesoItem = (item.peso || CONFIG.DIMENSOES.peso) * item.qty;
+            pesoTotal += pesoItem;
+            
+            // Calcular volume aproximado (comprimento x largura x altura)
+            const volumeItem = item.comprimento * item.largura * item.altura * item.qty;
+            volumeTotal += volumeItem;
+        });
+        
+        // Para múltiplos itens, considerar a caixa maior
+        const totalItens = Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
+        
+        return {
+            pesoTotal: Math.max(pesoTotal, CONFIG.DIMENSOES.peso),
+            totalItens: totalItens,
+            volumeTotal: volumeTotal
+        };
+    }
+
+    async function consultarFretesCorreios(ufDestino, dimensoes) {
+        const opcoes = [];
+        
+        // Valores base por região (atualizados para 2024)
+        const regioes = {
+            // Região Sudeste
+            'SP': { pac: 18.50, sedex: 28.90, fator: 1.0 },
+            'MG': { pac: 24.90, sedex: 34.90, fator: 1.4 },
+            'RJ': { pac: 26.90, sedex: 36.90, fator: 1.6 },
+            'ES': { pac: 28.90, sedex: 38.90, fator: 1.7 },
+            
+            // Região Sul
+            'PR': { pac: 22.90, sedex: 32.90, fator: 1.3 },
+            'SC': { pac: 25.90, sedex: 35.90, fator: 1.5 },
+            'RS': { pac: 27.90, sedex: 37.90, fator: 1.6 },
+            
+            // Região Centro-Oeste
+            'DF': { pac: 30.90, sedex: 40.90, fator: 1.8 },
+            'GO': { pac: 29.90, sedex: 39.90, fator: 1.8 },
+            'MT': { pac: 37.90, sedex: 47.90, fator: 2.3 },
+            'MS': { pac: 34.90, sedex: 44.90, fator: 2.1 },
+            
+            // Região Nordeste
+            'BA': { pac: 32.90, sedex: 42.90, fator: 2.0 },
+            'SE': { pac: 34.90, sedex: 44.90, fator: 2.1 },
+            'AL': { pac: 35.90, sedex: 45.90, fator: 2.2 },
+            'PE': { pac: 36.90, sedex: 46.90, fator: 2.2 },
+            'PB': { pac: 37.90, sedex: 47.90, fator: 2.3 },
+            'RN': { pac: 38.90, sedex: 48.90, fator: 2.3 },
+            'CE': { pac: 39.90, sedex: 49.90, fator: 2.4 },
+            'PI': { pac: 36.90, sedex: 46.90, fator: 2.2 },
+            'MA': { pac: 38.90, sedex: 48.90, fator: 2.3 },
+            
+            // Região Norte
+            'AM': { pac: 47.90, sedex: 57.90, fator: 2.9 },
+            'PA': { pac: 44.90, sedex: 54.90, fator: 2.7 },
+            'TO': { pac: 40.90, sedex: 50.90, fator: 2.5 },
+            'RO': { pac: 42.90, sedex: 52.90, fator: 2.6 },
+            'AC': { pac: 50.90, sedex: 60.90, fator: 3.1 },
+            'AP': { pac: 52.90, sedex: 62.90, fator: 3.2 },
+            'RR': { pac: 54.90, sedex: 64.90, fator: 3.3 }
+        };
+        
+        const regiao = regioes[ufDestino] || regioes['SP'];
+        const peso = dimensoes.pesoTotal;
+        
+        // Calcular base do frete
+        let basePac = regiao.pac;
+        let baseSedex = regiao.sedex;
+        
+        // Ajustar pelo peso (considerando até 1kg)
+        if (peso > 1) {
+            const pesoExtra = peso - 1;
+            basePac += pesoExtra * 10; // R$ 10,00 por kg adicional
+            baseSedex += pesoExtra * 15; // R$ 15,00 por kg adicional
+        }
+        
+        // Arredondar
+        basePac = Math.ceil(basePac * 10) / 10;
+        baseSedex = Math.ceil(baseSedex * 10) / 10;
+        
+        // Calcular prazos
+        const prazoBase = calcularPrazoPorRegiao(ufDestino);
+        
+        // Opção 1: Retirada na Loja
+        opcoes.push({
+            id: 'retirada',
+            name: '🏪 Retirada na Loja',
+            price: 0,
+            delivery_time: 'Mesmo dia',
+            company: 'Loja',
+            details: CONFIG.LOJA_ENDERECO
+        });
+        
+        // Opção 2: Correios PAC
+        opcoes.push({
+            id: 'pac',
+            name: '📮 Correios PAC',
+            price: basePac,
+            delivery_time: `${prazoBase.pac_min}-${prazoBase.pac_max} dias úteis`,
+            company: 'Correios',
+            details: 'Entrega econômica'
+        });
+        
+        // Opção 3: Correios SEDEX
+        opcoes.push({
+            id: 'sedex',
+            name: '🚚 Correios SEDEX',
+            price: baseSedex,
+            delivery_time: `${prazoBase.sedex_min}-${prazoBase.sedex_max} dias úteis`,
+            company: 'Correios',
+            details: 'Entrega expressa'
+        });
+        
+        // Opção 4: Transportadora (para volumes grandes ou múltiplos itens)
+        if (peso > 2 || dimensoes.totalItens > 2) {
+            const baseTransportadora = basePac * 1.3;
+            opcoes.push({
+                id: 'transportadora',
+                name: '🚛 Transportadora',
+                price: Math.ceil(baseTransportadora * 10) / 10,
+                delivery_time: `${prazoBase.transportadora_min}-${prazoBase.transportadora_max} dias úteis`,
+                company: 'Jadlog/Total Express',
+                details: 'Para volumes maiores'
+            });
+        }
+        
+        return opcoes;
+    }
+
+    function calcularPrazoPorRegiao(uf) {
+        const prazos = {
+            'SP': { pac_min: 3, pac_max: 7, sedex_min: 1, sedex_max: 3, transportadora_min: 2, transportadora_max: 4 },
+            'MG': { pac_min: 5, pac_max: 10, sedex_min: 2, sedex_max: 4, transportadora_min: 3, transportadora_max: 6 },
+            'RJ': { pac_min: 5, pac_max: 10, sedex_min: 2, sedex_max: 4, transportadora_min: 3, transportadora_max: 6 },
+            'ES': { pac_min: 6, pac_max: 12, sedex_min: 3, sedex_max: 5, transportadora_min: 4, transportadora_max: 7 },
+            
+            'PR': { pac_min: 4, pac_max: 8, sedex_min: 2, sedex_max: 4, transportadora_min: 3, transportadora_max: 5 },
+            'SC': { pac_min: 5, pac_max: 10, sedex_min: 2, sedex_max: 4, transportadora_min: 3, transportadora_max: 6 },
+            'RS': { pac_min: 6, pac_max: 12, sedex_min: 3, sedex_max: 5, transportadora_min: 4, transportadora_max: 7 },
+            
+            'DF': { pac_min: 7, pac_max: 14, sedex_min: 3, sedex_max: 6, transportadora_min: 4, transportadora_max: 8 },
+            'GO': { pac_min: 7, pac_max: 14, sedex_min: 3, sedex_max: 6, transportadora_min: 4, transportadora_max: 8 },
+            
+            'BA': { pac_min: 8, pac_max: 16, sedex_min: 4, sedex_max: 7, transportadora_min: 5, transportadora_max: 9 },
+            'PE': { pac_min: 9, pac_max: 18, sedex_min: 5, sedex_max: 8, transportadora_min: 6, transportadora_max: 10 },
+            'CE': { pac_min: 10, pac_max: 20, sedex_min: 6, sedex_max: 9, transportadora_min: 7, transportadora_max: 12 },
+            
+            'AM': { pac_min: 12, pac_max: 25, sedex_min: 8, sedex_max: 12, transportadora_min: 10, transportadora_max: 15 }
+        };
+        
+        return prazos[uf] || { pac_min: 7, pac_max: 15, sedex_min: 3, sedex_max: 7, transportadora_min: 5, transportadora_max: 10 };
+    }
+
+    function gerarOpcoesFretePadrao() {
+        return [
+            {
+                id: 'retirada',
+                name: '🏪 Retirada na Loja',
+                price: 0,
+                delivery_time: 'Mesmo dia',
+                company: 'Loja',
+                details: CONFIG.LOJA_ENDERECO
+            },
+            {
+                id: 'pac',
+                name: '📮 Correios PAC',
+                price: 27.90,
+                delivery_time: '5-12 dias úteis',
+                company: 'Correios',
+                details: 'Entrega econômica'
+            },
+            {
+                id: 'sedex',
+                name: '🚚 Correios SEDEX',
+                price: 37.90,
+                delivery_time: '3-7 dias úteis',
+                company: 'Correios',
+                details: 'Entrega expressa'
+            }
+        ];
+    }
+
+    function mostrarOpcoesFrete(opcoes) {
+        const container = document.getElementById('opcoes-frete');
+        container.innerHTML = '';
+        
+        opcoes.forEach(opcao => {
+            const div = document.createElement('div');
+            div.className = 'opcao-frete';
+            div.innerHTML = `
+                <div class="frete-info">
+                    <div class="frete-nome">${opcao.name}</div>
+                    <div class="frete-prazo">${opcao.delivery_time}</div>
+                    ${opcao.details ? `<div style="font-size:0.8rem; color:#888; margin-top:2px;">${opcao.details}</div>` : ''}
+                </div>
+                <div class="frete-valor">R$ ${opcao.price.toFixed(2).replace('.', ',')}</div>
+            `;
+            
+            div.onclick = () => selecionarFrete(opcao, div);
+            container.appendChild(div);
+            
+            if (opcao.id === 'retirada') {
+                selecionarFrete(opcao, div);
+            }
+        });
+    }
+
+    function selecionarFrete(opcao, elemento) {
+        document.querySelectorAll('.opcao-frete').forEach(el => {
+            el.classList.remove('selected');
+        });
+        
+        elemento.classList.add('selected');
+        freteSelecionado = opcao;
+        updateTotais();
+    }
+
+    function mostrarErroFrete(mensagem) {
+        document.getElementById('frete-error').textContent = mensagem;
+        document.getElementById('frete-error').style.display = 'block';
+        document.getElementById('btn-calcular').disabled = false;
+        document.getElementById('frete-loading').style.display = 'none';
+    }
+
+    // GERAR LINK DE PAGAMENTO DO MERCADO PAGO
+    async function gerarLinkPagamentoMercadoPago() {
+        try {
+            const subtotal = Object.values(cart).reduce((total, item) => total + (item.price * item.qty), 0);
+            const total = subtotal + (freteSelecionado ? freteSelecionado.price : 0);
+            
+            // Em um ambiente real, você faria uma chamada para seu backend
+            // que criaria a preferência no Mercado Pago
+            
+            // Exemplo da estrutura que você precisa no backend:
+            const preferenceData = {
+                items: Object.values(cart).map(item => ({
+                    title: item.name,
+                    quantity: item.qty,
+                    currency_id: 'BRL',
+                    unit_price: parseFloat(item.price)
+                })),
+                payer: {
+                    name: document.getElementById('c-nome').value.trim(),
+                    email: document.getElementById('c-email').value.trim(),
+                    phone: {
+                        number: document.getElementById('c-tel').value.replace(/\D/g, '')
+                    }
+                },
+                back_urls: {
+                    success: window.location.href,
+                    failure: window.location.href,
+                    pending: window.location.href
+                },
+                auto_return: "approved",
+                notification_url: "https://seu-backend.com/notifications", // Webhook para notificações
+                external_reference: currentOrderId,
+                statement_descriptor: CONFIG.LOJA_NOME.substring(0, 22)
+            };
+            
+            // Adicionar frete como item adicional
+            if (freteSelecionado && freteSelecionado.price > 0) {
+                preferenceData.items.push({
+                    title: `Frete - ${freteSelecionado.name}`,
+                    quantity: 1,
+                    currency_id: 'BRL',
+                    unit_price: parseFloat(freteSelecionado.price)
+                });
+            }
+            
+            // Aqui você faria a chamada para seu servidor:
+            // const response = await fetch('/api/mercadopago/create-preference', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify(preferenceData)
+            // });
+            
+            // const data = await response.json();
+            // mercadoPagoPreferenceId = data.id;
+            
+            // Para demonstração, vou simular um ID de preferência
+            mercadoPagoPreferenceId = 'mock-' + Date.now();
+            
+            return `https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=${mercadoPagoPreferenceId}`;
+            
+        } catch (error) {
+            console.error("Erro ao gerar link de pagamento:", error);
+            return null;
+        }
+    }
+
+    // ENVIO PARA WHATSAPP COM LINK DE PAGAMENTO
+    async function enviarPedidoWhatsApp() {
+        // Validar dados
+        const nome = document.getElementById('c-nome').value.trim();
+        const email = document.getElementById('c-email').value.trim();
+        const telefone = document.getElementById('c-tel').value.trim();
+        const cep = document.getElementById('c-cep').value.trim();
+        const numero = document.getElementById('c-num').value.trim();
+        
+        if(!nome || Object.keys(cart).length === 0) {
+            alert("Por favor, preencha seu nome e adicione produtos.");
+            return;
+        }
+        
+        if (!email) {
+            alert("Por favor, informe seu e-mail.");
+            return;
+        }
+        
+        if (!telefone) {
+            alert("Por favor, informe seu telefone.");
+            return;
+        }
+        
+        if (!freteSelecionado) {
+            alert("Por favor, selecione uma opção de frete.");
+            return;
+        }
+        
+        if (freteSelecionado.id !== 'retirada') {
+            if (!cep || !numero) {
+                alert("Por favor, informe CEP e número do endereço.");
+                return;
+            }
+        }
+        
+        // Gerar ID do pedido
+        currentOrderId = 'PED' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 100).toString().padStart(2, '0');
+        
+        // Gerar link de pagamento do Mercado Pago
+        showPaymentStatus('processing', 'Gerando link de pagamento...', 'Aguarde enquanto preparamos seu pagamento.');
+        
+        const linkPagamento = await gerarLinkPagamentoMercadoPago();
+        
+        if (!linkPagamento) {
+            showPaymentStatus('error', 'Erro no pagamento', 'Não foi possível gerar o link de pagamento. Tente novamente ou entre em contato.');
+            return;
+        }
+        
+        // Calcular totais
+        const subtotal = Object.values(cart).reduce((total, item) => total + (item.price * item.qty), 0);
+        const total = subtotal + freteSelecionado.price;
+        
+        // Construir mensagem para WhatsApp
+        let msg = `*${CONFIG.LOJA_NOME}*%0A`;
+        msg += `*🛒 NOVO PEDIDO - PRONTO PARA PAGAMENTO*%0A`;
+        msg += `*Pedido:* ${currentOrderId}%0A`;
+        msg += `*Data:* ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR').slice(0,5)}%0A%0A`;
+        
+        msg += `*👤 DADOS DO CLIENTE:*%0A`;
+        msg += `Nome: ${nome}%0A`;
+        msg += `Telefone: ${telefone}%0A`;
+        msg += `E-mail: ${email}%0A%0A`;
+        
+        if (freteSelecionado.id !== 'retirada') {
+            msg += `*📦 ENDEREÇO DE ENTREGA:*%0A`;
+            msg += `CEP: ${cep}%0A`;
+            
+            if (enderecoCliente.rua) {
+                msg += `Endereço: ${enderecoCliente.rua}, ${numero}%0A`;
+                const complemento = document.getElementById('c-comp').value.trim();
+                if (complemento) msg += `Complemento: ${complemento}%0A`;
+                if (enderecoCliente.bairro) msg += `Bairro: ${enderecoCliente.bairro}%0A`;
+                if (enderecoCliente.cidade) msg += `Cidade: ${enderecoCliente.cidade}%0A`;
+                if (enderecoCliente.estado) msg += `Estado: ${enderecoCliente.estado}%0A`;
+            }
+            msg += `%0A`;
+        }
+        
+        msg += `*🚚 OPÇÃO DE ENTREGA:*%0A`;
+        msg += `${freteSelecionado.name}%0A`;
+        msg += `Prazo: ${freteSelecionado.delivery_time}%0A`;
+        msg += `Valor: R$ ${freteSelecionado.price.toFixed(2).replace('.', ',')}%0A`;
+        
+        if (freteSelecionado.id === 'retirada') {
+            msg += `Local: ${CONFIG.LOJA_ENDERECO}%0A%0A`;
+        }
+        
+        msg += `%0A*🛍️ RESUMO DO PEDIDO:*%0A`;
+        msg += `════════════════════════%0A`;
+        Object.values(cart).forEach(i => {
+            msg += `*${i.name}*%0A`;
+            msg += `Quantidade: ${i.qty} unidade(s)%0A`;
+            msg += `Valor unitário: R$ ${i.price.toFixed(2).replace('.', ',')}%0A`;
+            msg += `Subtotal: R$ ${(i.price * i.qty).toFixed(2).replace('.', ',')}%0A`;
+            msg += `════════════════════════%0A`;
+        });
+        
+        msg += `%0A*💰 VALORES:*%0A`;
+        msg += `Subtotal produtos: R$ ${subtotal.toFixed(2).replace('.', ',')}%0A`;
+        msg += `Frete: R$ ${freteSelecionado.price.toFixed(2).replace('.', ',')}%0A`;
+        msg += `*TOTAL: R$ ${total.toFixed(2).replace('.', ',')}*%0A%0A`;
+        
+        msg += `*💳 LINK PARA PAGAMENTO:*%0A`;
+        msg += `${linkPagamento}%0A%0A`;
+        
+        msg += `📍 *Loja:* ${CONFIG.LOJA_ENDERECO}%0A`;
+        msg += `📞 *Contato:* ${CONFIG.LOJA_TELEFONE}%0A%0A`;
+        
+        msg += `════════════════════════%0A`;
+        msg += `*📝 INSTRUÇÕES:*%0A`;
+        msg += `1️⃣ *Clique no link acima para pagar*%0A`;
+        msg += `2️⃣ *Após o pagamento, envie o comprovante aqui*%0A`;
+        msg += `3️⃣ *Seu pedido será enviado em até 24h após confirmação*%0A`;
+        msg += `════════════════════════%0A`;
+        
+        // Mostrar status de confirmação
+        showPaymentStatus('whatsapp', 'Link de Pagamento Gerado!', 
+            `Seu pedido #${currentOrderId} está pronto. O link de pagamento foi gerado e será enviado pelo WhatsApp.`);
+        
+        // Adicionar botão para abrir WhatsApp com a mensagem
+        document.getElementById('whatsappButton').onclick = function() {
+            window.open(`https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${msg}`, '_blank');
+            
+            // Limpar carrinho após envio
+            setTimeout(() => {
+                cart = {};
+                renderCartUI();
+                updateTotais();
+                toggleCart();
+            }, 1000);
+        };
+        
+        // Mostrar botão do WhatsApp
+        document.getElementById('whatsappButton').style.display = 'flex';
+    }
+
+    // MERCADO PAGO CHECKOUT DIRETO
+    async function checkoutMercadoPago() {
+        const nome = document.getElementById('c-nome').value.trim();
+        const email = document.getElementById('c-email').value.trim();
+        const telefone = document.getElementById('c-tel').value.trim();
+        
+        if(!nome || Object.keys(cart).length === 0) {
+            alert("Por favor, preencha seu nome e adicione produtos.");
+            return;
+        }
+        
+        if (!email) {
+            alert("Por favor, informe seu e-mail.");
+            return;
+        }
+        
+        if (!telefone) {
+            alert("Por favor, informe seu telefone.");
+            return;
+        }
+        
+        if (!freteSelecionado) {
+            alert("Por favor, selecione uma opção de frete.");
+            return;
+        }
+        
+        showPaymentStatus('processing', 'Processando pagamento...', 'Aguarde enquanto preparamos seu pagamento.');
+        
+        // Gerar pedido
+        currentOrderId = 'MP' + Date.now().toString().slice(-6);
+        
+        // Em produção, você usaria a SDK do Mercado Pago
+        // Inicializar Mercado Pago
+        const mp = new MercadoPago(CONFIG.MP_PUBLIC_KEY, {
+            locale: 'pt-BR'
+        });
+        
+        try {
+            // Em um ambiente real, você faria uma chamada para seu backend
+            // Para criar a preferência no Mercado Pago
+            const linkPagamento = await gerarLinkPagamentoMercadoPago();
+            
+            if (linkPagamento) {
+                // Redirecionar para o pagamento
+                window.location.href = linkPagamento;
+            } else {
+                showPaymentStatus('error', 'Erro no pagamento', 'Não foi possível processar o pagamento. Tente novamente.');
+            }
+            
+        } catch (error) {
+            console.error("Erro no Mercado Pago:", error);
+            showPaymentStatus('error', 'Erro no pagamento', 'Não foi possível processar o pagamento. Tente novamente ou use o WhatsApp.');
+        }
+    }
+
+    // STATUS DE PAGAMENTO
+    function showPaymentStatus(type, title, message, details = null) {
+        const statusDiv = document.getElementById('paymentStatus');
+        const statusIcon = document.getElementById('statusIcon');
+        const statusTitle = document.getElementById('statusTitle');
+        const statusMessage = document.getElementById('statusMessage');
+        const statusDetails = document.getElementById('statusDetails');
+        const whatsappButton = document.getElementById('whatsappButton');
+        const closeButton = document.getElementById('closeStatusButton');
+        const processingSpinner = document.getElementById('processingSpinner');
+        const orderNumber = document.getElementById('orderNumberDisplay');
+        const importantNote = document.getElementById('importantNote');
+        
+        // Resetar
+        statusDiv.className = 'payment-status';
+        statusDiv.style.display = 'flex';
+        
+        switch(type) {
+            case 'processing':
+                statusDiv.classList.add('payment-processing');
+                processingSpinner.style.display = 'block';
+                statusIcon.style.display = 'none';
+                statusTitle.textContent = title;
+                statusMessage.textContent = message;
+                whatsappButton.style.display = 'none';
+                closeButton.style.display = 'none';
+                orderNumber.style.display = 'none';
+                importantNote.style.display = 'none';
+                break;
+                
+            case 'success':
+                statusDiv.classList.add('success');
+                processingSpinner.style.display = 'none';
+                statusIcon.style.display = 'block';
+                statusIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                statusTitle.textContent = title;
+                statusMessage.textContent = message;
+                
+                if (currentOrderId) {
+                    orderNumber.textContent = `PEDIDO: ${currentOrderId}`;
+                    orderNumber.style.display = 'block';
+                }
+                
+                whatsappButton.style.display = 'none';
+                closeButton.style.display = 'block';
+                break;
+                
+            case 'error':
+                statusDiv.classList.add('error');
+                processingSpinner.style.display = 'none';
+                statusIcon.style.display = 'block';
+                statusIcon.innerHTML = '<i class="fas fa-times-circle"></i>';
+                statusTitle.textContent = title;
+                statusMessage.textContent = message;
+                whatsappButton.style.display = 'none';
+                closeButton.style.display = 'block';
+                orderNumber.style.display = 'none';
+                break;
+                
+            case 'whatsapp':
+                statusDiv.classList.add('whatsapp');
+                processingSpinner.style.display = 'none';
+                statusIcon.style.display = 'block';
+                statusIcon.innerHTML = '<i class="fab fa-whatsapp"></i>';
+                statusTitle.textContent = title;
+                statusMessage.textContent = message;
+                
+                if (currentOrderId) {
+                    orderNumber.textContent = `PEDIDO: ${currentOrderId}`;
+                    orderNumber.style.display = 'block';
+                }
+                
+                importantNote.innerHTML = `
+                    <strong>⚠️ ATENÇÃO</strong><br>
+                    1. Clique no botão abaixo para abrir o WhatsApp<br>
+                    2. O link de pagamento já está na mensagem pronta<br>
+                    3. Após pagar, envie o comprovante pelo WhatsApp
+                `;
+                importantNote.style.display = 'block';
+                
+                whatsappButton.style.display = 'none'; // Será mostrado pelo botão específico
+                closeButton.style.display = 'block';
+                break;
+        }
+        
+        // Fechar carrinho
+        toggleCart();
+    }
+
+    function closePaymentStatus() {
+        document.getElementById('paymentStatus').style.display = 'none';
+        document.getElementById('whatsappButton').style.display = 'none';
+    }
+
+    function abrirWhatsAppPagamento() {
+        // Esta função será chamada pelo botão específico
+    }
+
+    function abrirWhatsAppSuporte() {
+        window.open(`https://wa.me/${CONFIG.WHATSAPP_SUPORTE}?text=Olá! Gostaria de informações sobre os produtos.`, '_blank');
+    }
+
+    function abrirInstagram() {
+        window.open(CONFIG.INSTAGRAM_URL, '_blank');
+    }
+
+    function loadImageWithFallback(imgElement, productId, fallbackIndex) {
+        const originalSrc = imgElement.src;
+        
+        imgElement.onload = function() {
+            imgElement.classList.remove('img-loading');
+        };
+        
+        imgElement.onerror = function() {
+            const fallbackSrc = fallbackImages[fallbackIndex % fallbackImages.length];
+            imgElement.src = fallbackSrc;
+            
+            imgElement.onerror = function() {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'img-placeholder';
+                placeholder.innerHTML = `
+                    <i class="fas fa-shopping-bag"></i>
+                    <div>${products.find(p => p.id === productId)?.name || 'Produto'}</div>
+                    <small>Imagem não disponível</small>
+                `;
+                imgElement.parentNode.replaceChild(placeholder, imgElement);
+            };
+        };
+        
+        imgElement.classList.add('img-loading');
+    }
+
+    function toggleFAQ(el) {
+        const ans = el.querySelector('.faq-answer');
+        ans.style.display = ans.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // INICIALIZAÇÃO
+    document.addEventListener('DOMContentLoaded', function() {
+        const cepInput = document.getElementById('cep-input');
+        const telInput = document.getElementById('c-tel');
+        
+        if (cepInput) {
+            cepInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 5) {
+                    value = value.substring(0,5) + '-' + value.substring(5,8);
+                }
+                e.target.value = value;
+            });
+            
+            cepInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    calcularFreteReal();
+                }
+            });
+        }
+        
+        if (telInput) {
+            telInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 10) {
+                    value = `(${value.substring(0,2)}) ${value.substring(2,7)}-${value.substring(7,11)}`;
+                } else if (value.length > 6) {
+                    value = `(${value.substring(0,2)}) ${value.substring(2,6)}-${value.substring(6)}`;
+                } else if (value.length > 2) {
+                    value = `(${value.substring(0,2)}) ${value.substring(2)}`;
+                } else if (value.length > 0) {
+                    value = `(${value}`;
+                }
+                e.target.value = value;
+            });
+        }
+        
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        initStore();
+    });
+</script>
+
+</body>
+</html>
