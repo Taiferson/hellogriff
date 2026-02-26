@@ -797,8 +797,8 @@
 <header>
     <div class="brand-name">HELOISA HELLO GRIFF</div>
     <div class="nav-tools">
-        <a href="#" onclick="abrirWhatsAppSuporte()"><i class="fab fa-whatsapp"></i></a>
-        <a href="#" onclick="abririnstagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" onclick="abrirWhatsAppSuporte(); return false;" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp"></i></a>
+        <a href="#" onclick="abrirInstagram(); return false;" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
         <div class="cart-btn" onclick="toggleCart()">
             <i class="fas fa-shopping-cart"></i>
             <span id="cart-badge">0</span>
@@ -854,18 +854,15 @@
             </div>
 
             <div class="payment-buttons">
-                <button class="btn-mercadopago" onclick="checkoutMercadoPago()">
-                    <i class="fas fa-credit-card"></i> PAGAR COM MERCADO PAGO
-                </button>
                 <button class="btn-whatsapp-checkout" onclick="enviarPedidoWhatsApp()">
                     <i class="fab fa-whatsapp"></i> FINALIZAR PEDIDO VIA WHATSAPP
                 </button>
             </div>
             
-            <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #009ee3;">
+            <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #25D366;">
                 <p style="margin: 0; font-size: 0.85rem; color: #555;">
-                    <i class="fas fa-info-circle" style="color: #009ee3;"></i> 
-                    <strong>Como funciona:</strong> Após enviar o pedido pelo WhatsApp, você receberá o link de pagamento em minutos. Após o pagamento, envie o comprovante pelo mesmo WhatsApp.
+                    <i class="fas fa-info-circle" style="color: #25D366;"></i> 
+                    <strong>Como funciona:</strong> Após finalizar o pedido pelo WhatsApp, você receberá o link de pagamento em minutos. Após o pagamento, envie o comprovante pelo mesmo WhatsApp.
                 </p>
             </div>
         </div>
@@ -878,6 +875,10 @@
             <div class="summary-row">
                 <span>Frete:</span>
                 <span id="frete-total">R$ 0,00</span>
+            </div>
+            <div class="summary-row" id="taxa-adicional-row" style="display:none;">
+                <span>Taxa Adicional:</span>
+                <span id="taxa-adicional">R$ 0,00</span>
             </div>
             <div class="summary-total">
                 <span>TOTAL:</span>
@@ -929,7 +930,7 @@
 <script>
     // CONFIGURAÇÕES (AJUSTE AQUI!)
     const CONFIG = {
-        WHATSAPP_NUMBER: 'c', // SEU NÚMERO DO WHATSAPP COM DDI (ex: 5516993830355)
+        WHATSAPP_NUMBER: '5516993830355', // SEU NÚMERO DO WHATSAPP COM DDI (ex: 5516993830355)
         WHATSAPP_SUPORTE: '5516993830355', // Número para suporte
         INSTAGRAM_URL: 'https://www.instagram.com/hellogriffoficial/',
         MP_PUBLIC_KEY: 'APP_USR-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', // Sua Public Key do Mercado Pago
@@ -937,13 +938,15 @@
         LOJA_ENDERECO: 'Rua Augusto Honório, 992 - Franca/SP',
         LOJA_TELEFONE: '(16) 99383-0355',
         EMAIL_VENDAS: 'vendas@heloisagriff.com.br',
+        CEP_LOJA: '14400000', // CEP de Franca/SP
         // Dimensões padrão dos produtos
         DIMENSOES: {
             altura: 10,   // cm
             largura: 20,  // cm
             comprimento: 30, // cm
             peso: 1.0     // kg
-        }
+        },
+        TAXA_ADICIONAL: 20.00 // Taxa adicional de R$20,00 para fretes
     };
 
     // LISTA DE PRODUTOS (mantendo seus produtos)
@@ -988,7 +991,7 @@
     let cepDestino = '';
     let enderecoCliente = {};
     let currentOrderId = null;
-    let mercadoPagoPreferenceId = null;
+    let taxaAdicional = 0;
 
     // FUNÇÕES PRINCIPAIS
     function initStore() {
@@ -1153,10 +1156,18 @@
     function updateTotais() {
         const subtotal = Object.values(cart).reduce((total, item) => total + (item.price * item.qty), 0);
         const freteValor = freteSelecionado ? parseFloat(freteSelecionado.price) : 0;
-        const total = subtotal + freteValor;
+        const total = subtotal + freteValor + taxaAdicional;
         
         document.getElementById('subtotal').textContent = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
         document.getElementById('frete-total').textContent = freteSelecionado ? `R$ ${freteSelecionado.price.toFixed(2).replace('.', ',')}` : 'R$ 0,00';
+        
+        if (taxaAdicional > 0) {
+            document.getElementById('taxa-adicional-row').style.display = 'flex';
+            document.getElementById('taxa-adicional').textContent = `R$ ${taxaAdicional.toFixed(2).replace('.', ',')}`;
+        } else {
+            document.getElementById('taxa-adicional-row').style.display = 'none';
+        }
+        
         document.getElementById('total-final').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
     }
 
@@ -1183,8 +1194,11 @@
         document.getElementById('opcoes-frete').innerHTML = '';
         document.getElementById('frete-error').style.display = 'none';
         
+        // Resetar taxa adicional
+        taxaAdicional = 0;
+        
         try {
-            // 1. Consultar CEP para obter endereço
+            // Consultar CEP para obter endereço
             const viaCepResponse = await fetch(`https://viacep.com.br/ws/${cepDestino}/json/`);
             const dadosCep = await viaCepResponse.json();
             
@@ -1202,214 +1216,230 @@
                 estado: dadosCep.uf
             };
             
-            // 2. Calcular dimensões totais do pedido
-            const dimensoes = calcularDimensoesPedido();
+            // Verificar se é Franca/SP
+            const isFranca = (dadosCep.localidade === 'Franca' && dadosCep.uf === 'SP') || cepDestino.startsWith('14400');
             
-            // 3. Consultar API de fretes (usando serviço proxy ou cálculo direto)
-            const opcoes = await consultarFretesCorreios(dadosCep.uf, dimensoes);
+            // Opções de frete
+            const opcoes = [];
             
-            if (opcoes.length === 0) {
-                mostrarErroFrete("Nenhuma opção de frete disponível para este CEP.");
-                return;
+            // Opção 1: Retirada na Loja (sempre disponível)
+            opcoes.push({
+                id: 'retirada',
+                name: '🏪 Retirada na Loja',
+                price: 0,
+                delivery_time: 'Mesmo dia (após confirmação)',
+                company: 'Loja',
+                details: CONFIG.LOJA_ENDERECO,
+                isFranca: true
+            });
+            
+            // Opção 2: Frete Franca fixo R$25,00
+            if (isFranca) {
+                opcoes.push({
+                    id: 'franca',
+                    name: '🚚 Entrega em Franca',
+                    price: 25.00,
+                    delivery_time: '1-2 dias úteis',
+                    company: 'Entrega Local',
+                    details: 'Entrega em Franca/SP',
+                    isFranca: true
+                });
+            }
+            
+            // Opção 3: Frete para todo Brasil (com cálculo real + taxa adicional)
+            try {
+                // Simular cálculo dos Correios com base no CEP
+                // Em produção, você usaria a API oficial dos Correios
+                const freteBrasil = await calcularFreteCorreios(cepDestino, dadosCep.uf);
+                
+                // Adicionar taxa adicional de R$20,00
+                const freteComTaxa = freteBrasil.price + CONFIG.TAXA_ADICIONAL;
+                taxaAdicional = CONFIG.TAXA_ADICIONAL;
+                
+                opcoes.push({
+                    id: 'brasil',
+                    name: '📦 Frete para Todo Brasil',
+                    price: freteComTaxa,
+                    delivery_time: freteBrasil.delivery_time,
+                    company: 'Correios',
+                    details: `Frete calculado + taxa de R$ ${CONFIG.TAXA_ADICIONAL.toFixed(2).replace('.', ',')}`,
+                    isFranca: false,
+                    freteOriginal: freteBrasil.price
+                });
+                
+            } catch (error) {
+                console.error("Erro no cálculo do frete:", error);
+                // Fallback com valores padrão + taxa
+                const valorBase = calcularValorFretePorRegiao(dadosCep.uf);
+                const freteComTaxa = valorBase + CONFIG.TAXA_ADICIONAL;
+                taxaAdicional = CONFIG.TAXA_ADICIONAL;
+                
+                opcoes.push({
+                    id: 'brasil',
+                    name: '📦 Frete para Todo Brasil',
+                    price: freteComTaxa,
+                    delivery_time: `${obterPrazoEntrega(dadosCep.uf)}`,
+                    company: 'Correios',
+                    details: `Frete aproximado + taxa de R$ ${CONFIG.TAXA_ADICIONAL.toFixed(2).replace('.', ',')}`,
+                    isFranca: false,
+                    freteOriginal: valorBase
+                });
             }
             
             mostrarOpcoesFrete(opcoes);
             
         } catch (error) {
             console.error("Erro ao calcular frete:", error);
-            // Fallback para valores padrão baseados na região
-            const opcoesPadrao = gerarOpcoesFretePadrao();
-            mostrarOpcoesFrete(opcoesPadrao);
+            mostrarErroFrete("Erro ao consultar CEP. Tente novamente.");
         } finally {
             document.getElementById('btn-calcular').disabled = false;
             document.getElementById('frete-loading').style.display = 'none';
         }
     }
 
-    function calcularDimensoesPedido() {
-        let pesoTotal = 0;
-        let volumeTotal = 0;
+    async function calcularFreteCorreios(cepDestino, uf) {
+        // Simulação de cálculo dos Correios baseado no CEP e UF
+        // Em produção, você deve usar a API oficial dos Correios
         
-        Object.values(cart).forEach(item => {
-            const pesoItem = (item.peso || CONFIG.DIMENSOES.peso) * item.qty;
-            pesoTotal += pesoItem;
-            
-            // Calcular volume aproximado (comprimento x largura x altura)
-            const volumeItem = item.comprimento * item.largura * item.altura * item.qty;
-            volumeTotal += volumeItem;
-        });
+        // Tabela de preços base por região (valores aproximados para demonstração)
+        const precosPorRegiao = {
+            'SP': 25.90,
+            'MG': 32.90,
+            'RJ': 34.90,
+            'ES': 36.90,
+            'PR': 30.90,
+            'SC': 33.90,
+            'RS': 35.90,
+            'DF': 42.90,
+            'GO': 39.90,
+            'MT': 45.90,
+            'MS': 42.90,
+            'BA': 44.90,
+            'SE': 45.90,
+            'AL': 46.90,
+            'PE': 47.90,
+            'PB': 48.90,
+            'RN': 49.90,
+            'CE': 50.90,
+            'PI': 47.90,
+            'MA': 49.90,
+            'AM': 59.90,
+            'PA': 54.90,
+            'TO': 51.90,
+            'RO': 53.90,
+            'AC': 62.90,
+            'AP': 64.90,
+            'RR': 66.90
+        };
         
-        // Para múltiplos itens, considerar a caixa maior
-        const totalItens = Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
+        const valorBase = precosPorRegiao[uf] || 45.90;
+        
+        // Ajustar pelo peso do pedido
+        const pesoTotal = Object.values(cart).reduce((total, item) => total + (item.peso * item.qty), 0);
+        const fatorPeso = pesoTotal > 1 ? 1 + (pesoTotal - 1) * 0.3 : 1;
+        const valorFinal = valorBase * fatorPeso;
+        
+        // Prazo de entrega por região
+        const prazos = {
+            'SP': '2-5 dias úteis',
+            'MG': '3-7 dias úteis',
+            'RJ': '3-7 dias úteis',
+            'ES': '4-8 dias úteis',
+            'PR': '3-6 dias úteis',
+            'SC': '4-8 dias úteis',
+            'RS': '4-8 dias úteis',
+            'DF': '5-10 dias úteis',
+            'GO': '5-10 dias úteis',
+            'MT': '6-12 dias úteis',
+            'MS': '6-12 dias úteis',
+            'BA': '7-14 dias úteis',
+            'SE': '7-14 dias úteis',
+            'AL': '7-14 dias úteis',
+            'PE': '7-14 dias úteis',
+            'PB': '8-15 dias úteis',
+            'RN': '8-15 dias úteis',
+            'CE': '8-15 dias úteis',
+            'PI': '9-16 dias úteis',
+            'MA': '9-16 dias úteis',
+            'AM': '10-18 dias úteis',
+            'PA': '9-16 dias úteis',
+            'TO': '8-14 dias úteis',
+            'RO': '9-15 dias úteis',
+            'AC': '12-20 dias úteis',
+            'AP': '12-20 dias úteis',
+            'RR': '12-20 dias úteis'
+        };
         
         return {
-            pesoTotal: Math.max(pesoTotal, CONFIG.DIMENSOES.peso),
-            totalItens: totalItens,
-            volumeTotal: volumeTotal
+            price: Math.round(valorFinal * 100) / 100,
+            delivery_time: prazos[uf] || '7-14 dias úteis'
         };
     }
 
-    async function consultarFretesCorreios(ufDestino, dimensoes) {
-        const opcoes = [];
-        
-        // Valores base por região (atualizados para 2024)
-        const regioes = {
-            // Região Sudeste
-            'SP': { pac: 18.50, sedex: 28.90, fator: 1.0 },
-            'MG': { pac: 24.90, sedex: 34.90, fator: 1.4 },
-            'RJ': { pac: 26.90, sedex: 36.90, fator: 1.6 },
-            'ES': { pac: 28.90, sedex: 38.90, fator: 1.7 },
-            
-            // Região Sul
-            'PR': { pac: 22.90, sedex: 32.90, fator: 1.3 },
-            'SC': { pac: 25.90, sedex: 35.90, fator: 1.5 },
-            'RS': { pac: 27.90, sedex: 37.90, fator: 1.6 },
-            
-            // Região Centro-Oeste
-            'DF': { pac: 30.90, sedex: 40.90, fator: 1.8 },
-            'GO': { pac: 29.90, sedex: 39.90, fator: 1.8 },
-            'MT': { pac: 37.90, sedex: 47.90, fator: 2.3 },
-            'MS': { pac: 34.90, sedex: 44.90, fator: 2.1 },
-            
-            // Região Nordeste
-            'BA': { pac: 32.90, sedex: 42.90, fator: 2.0 },
-            'SE': { pac: 34.90, sedex: 44.90, fator: 2.1 },
-            'AL': { pac: 35.90, sedex: 45.90, fator: 2.2 },
-            'PE': { pac: 36.90, sedex: 46.90, fator: 2.2 },
-            'PB': { pac: 37.90, sedex: 47.90, fator: 2.3 },
-            'RN': { pac: 38.90, sedex: 48.90, fator: 2.3 },
-            'CE': { pac: 39.90, sedex: 49.90, fator: 2.4 },
-            'PI': { pac: 36.90, sedex: 46.90, fator: 2.2 },
-            'MA': { pac: 38.90, sedex: 48.90, fator: 2.3 },
-            
-            // Região Norte
-            'AM': { pac: 47.90, sedex: 57.90, fator: 2.9 },
-            'PA': { pac: 44.90, sedex: 54.90, fator: 2.7 },
-            'TO': { pac: 40.90, sedex: 50.90, fator: 2.5 },
-            'RO': { pac: 42.90, sedex: 52.90, fator: 2.6 },
-            'AC': { pac: 50.90, sedex: 60.90, fator: 3.1 },
-            'AP': { pac: 52.90, sedex: 62.90, fator: 3.2 },
-            'RR': { pac: 54.90, sedex: 64.90, fator: 3.3 }
+    function calcularValorFretePorRegiao(uf) {
+        const valores = {
+            'SP': 25.90,
+            'MG': 32.90,
+            'RJ': 34.90,
+            'ES': 36.90,
+            'PR': 30.90,
+            'SC': 33.90,
+            'RS': 35.90,
+            'DF': 42.90,
+            'GO': 39.90,
+            'MT': 45.90,
+            'MS': 42.90,
+            'BA': 44.90,
+            'SE': 45.90,
+            'AL': 46.90,
+            'PE': 47.90,
+            'PB': 48.90,
+            'RN': 49.90,
+            'CE': 50.90,
+            'PI': 47.90,
+            'MA': 49.90,
+            'AM': 59.90,
+            'PA': 54.90,
+            'TO': 51.90,
+            'RO': 53.90,
+            'AC': 62.90,
+            'AP': 64.90,
+            'RR': 66.90
         };
-        
-        const regiao = regioes[ufDestino] || regioes['SP'];
-        const peso = dimensoes.pesoTotal;
-        
-        // Calcular base do frete
-        let basePac = regiao.pac;
-        let baseSedex = regiao.sedex;
-        
-        // Ajustar pelo peso (considerando até 1kg)
-        if (peso > 1) {
-            const pesoExtra = peso - 1;
-            basePac += pesoExtra * 10; // R$ 10,00 por kg adicional
-            baseSedex += pesoExtra * 15; // R$ 15,00 por kg adicional
-        }
-        
-        // Arredondar
-        basePac = Math.ceil(basePac * 10) / 10;
-        baseSedex = Math.ceil(baseSedex * 10) / 10;
-        
-        // Calcular prazos
-        const prazoBase = calcularPrazoPorRegiao(ufDestino);
-        
-        // Opção 1: Retirada na Loja
-        opcoes.push({
-            id: 'retirada',
-            name: '🏪 Retirada na Loja',
-            price: 0,
-            delivery_time: 'Mesmo dia',
-            company: 'Loja',
-            details: CONFIG.LOJA_ENDERECO
-        });
-        
-        // Opção 2: Correios PAC
-        opcoes.push({
-            id: 'pac',
-            name: '📮 Correios PAC',
-            price: basePac,
-            delivery_time: `${prazoBase.pac_min}-${prazoBase.pac_max} dias úteis`,
-            company: 'Correios',
-            details: 'Entrega econômica'
-        });
-        
-        // Opção 3: Correios SEDEX
-        opcoes.push({
-            id: 'sedex',
-            name: '🚚 Correios SEDEX',
-            price: baseSedex,
-            delivery_time: `${prazoBase.sedex_min}-${prazoBase.sedex_max} dias úteis`,
-            company: 'Correios',
-            details: 'Entrega expressa'
-        });
-        
-        // Opção 4: Transportadora (para volumes grandes ou múltiplos itens)
-        if (peso > 2 || dimensoes.totalItens > 2) {
-            const baseTransportadora = basePac * 1.3;
-            opcoes.push({
-                id: 'transportadora',
-                name: '🚛 Transportadora',
-                price: Math.ceil(baseTransportadora * 10) / 10,
-                delivery_time: `${prazoBase.transportadora_min}-${prazoBase.transportadora_max} dias úteis`,
-                company: 'Jadlog/Total Express',
-                details: 'Para volumes maiores'
-            });
-        }
-        
-        return opcoes;
+        return valores[uf] || 45.90;
     }
 
-    function calcularPrazoPorRegiao(uf) {
+    function obterPrazoEntrega(uf) {
         const prazos = {
-            'SP': { pac_min: 3, pac_max: 7, sedex_min: 1, sedex_max: 3, transportadora_min: 2, transportadora_max: 4 },
-            'MG': { pac_min: 5, pac_max: 10, sedex_min: 2, sedex_max: 4, transportadora_min: 3, transportadora_max: 6 },
-            'RJ': { pac_min: 5, pac_max: 10, sedex_min: 2, sedex_max: 4, transportadora_min: 3, transportadora_max: 6 },
-            'ES': { pac_min: 6, pac_max: 12, sedex_min: 3, sedex_max: 5, transportadora_min: 4, transportadora_max: 7 },
-            
-            'PR': { pac_min: 4, pac_max: 8, sedex_min: 2, sedex_max: 4, transportadora_min: 3, transportadora_max: 5 },
-            'SC': { pac_min: 5, pac_max: 10, sedex_min: 2, sedex_max: 4, transportadora_min: 3, transportadora_max: 6 },
-            'RS': { pac_min: 6, pac_max: 12, sedex_min: 3, sedex_max: 5, transportadora_min: 4, transportadora_max: 7 },
-            
-            'DF': { pac_min: 7, pac_max: 14, sedex_min: 3, sedex_max: 6, transportadora_min: 4, transportadora_max: 8 },
-            'GO': { pac_min: 7, pac_max: 14, sedex_min: 3, sedex_max: 6, transportadora_min: 4, transportadora_max: 8 },
-            
-            'BA': { pac_min: 8, pac_max: 16, sedex_min: 4, sedex_max: 7, transportadora_min: 5, transportadora_max: 9 },
-            'PE': { pac_min: 9, pac_max: 18, sedex_min: 5, sedex_max: 8, transportadora_min: 6, transportadora_max: 10 },
-            'CE': { pac_min: 10, pac_max: 20, sedex_min: 6, sedex_max: 9, transportadora_min: 7, transportadora_max: 12 },
-            
-            'AM': { pac_min: 12, pac_max: 25, sedex_min: 8, sedex_max: 12, transportadora_min: 10, transportadora_max: 15 }
+            'SP': '2-5 dias úteis',
+            'MG': '3-7 dias úteis',
+            'RJ': '3-7 dias úteis',
+            'ES': '4-8 dias úteis',
+            'PR': '3-6 dias úteis',
+            'SC': '4-8 dias úteis',
+            'RS': '4-8 dias úteis',
+            'DF': '5-10 dias úteis',
+            'GO': '5-10 dias úteis',
+            'MT': '6-12 dias úteis',
+            'MS': '6-12 dias úteis',
+            'BA': '7-14 dias úteis',
+            'SE': '7-14 dias úteis',
+            'AL': '7-14 dias úteis',
+            'PE': '7-14 dias úteis',
+            'PB': '8-15 dias úteis',
+            'RN': '8-15 dias úteis',
+            'CE': '8-15 dias úteis',
+            'PI': '9-16 dias úteis',
+            'MA': '9-16 dias úteis',
+            'AM': '10-18 dias úteis',
+            'PA': '9-16 dias úteis',
+            'TO': '8-14 dias úteis',
+            'RO': '9-15 dias úteis',
+            'AC': '12-20 dias úteis',
+            'AP': '12-20 dias úteis',
+            'RR': '12-20 dias úteis'
         };
-        
-        return prazos[uf] || { pac_min: 7, pac_max: 15, sedex_min: 3, sedex_max: 7, transportadora_min: 5, transportadora_max: 10 };
-    }
-
-    function gerarOpcoesFretePadrao() {
-        return [
-            {
-                id: 'retirada',
-                name: '🏪 Retirada na Loja',
-                price: 0,
-                delivery_time: 'Mesmo dia',
-                company: 'Loja',
-                details: CONFIG.LOJA_ENDERECO
-            },
-            {
-                id: 'pac',
-                name: '📮 Correios PAC',
-                price: 27.90,
-                delivery_time: '5-12 dias úteis',
-                company: 'Correios',
-                details: 'Entrega econômica'
-            },
-            {
-                id: 'sedex',
-                name: '🚚 Correios SEDEX',
-                price: 37.90,
-                delivery_time: '3-7 dias úteis',
-                company: 'Correios',
-                details: 'Entrega expressa'
-            }
-        ];
+        return prazos[uf] || '7-14 dias úteis';
     }
 
     function mostrarOpcoesFrete(opcoes) {
@@ -1422,7 +1452,7 @@
             div.innerHTML = `
                 <div class="frete-info">
                     <div class="frete-nome">${opcao.name}</div>
-                    <div class="frete-prazo">${opcao.delivery_time}</div>
+                    <div class="frete-prazo">Prazo: ${opcao.delivery_time}</div>
                     ${opcao.details ? `<div style="font-size:0.8rem; color:#888; margin-top:2px;">${opcao.details}</div>` : ''}
                 </div>
                 <div class="frete-valor">R$ ${opcao.price.toFixed(2).replace('.', ',')}</div>
@@ -1431,7 +1461,8 @@
             div.onclick = () => selecionarFrete(opcao, div);
             container.appendChild(div);
             
-            if (opcao.id === 'retirada') {
+            // Selecionar automaticamente a primeira opção disponível
+            if (opcoes.indexOf(opcao) === 0) {
                 selecionarFrete(opcao, div);
             }
         });
@@ -1444,6 +1475,13 @@
         
         elemento.classList.add('selected');
         freteSelecionado = opcao;
+        
+        // A taxa adicional já está incluída no preço do frete para Brasil
+        // Para Franca e retirada, taxa adicional é 0
+        if (opcao.isFranca || opcao.id === 'retirada') {
+            taxaAdicional = 0;
+        }
+        
         updateTotais();
     }
 
@@ -1452,74 +1490,6 @@
         document.getElementById('frete-error').style.display = 'block';
         document.getElementById('btn-calcular').disabled = false;
         document.getElementById('frete-loading').style.display = 'none';
-    }
-
-    // GERAR LINK DE PAGAMENTO DO MERCADO PAGO
-    async function gerarLinkPagamentoMercadoPago() {
-        try {
-            const subtotal = Object.values(cart).reduce((total, item) => total + (item.price * item.qty), 0);
-            const total = subtotal + (freteSelecionado ? freteSelecionado.price : 0);
-            
-            // Em um ambiente real, você faria uma chamada para seu backend
-            // que criaria a preferência no Mercado Pago
-            
-            // Exemplo da estrutura que você precisa no backend:
-            const preferenceData = {
-                items: Object.values(cart).map(item => ({
-                    title: item.name,
-                    quantity: item.qty,
-                    currency_id: 'BRL',
-                    unit_price: parseFloat(item.price)
-                })),
-                payer: {
-                    name: document.getElementById('c-nome').value.trim(),
-                    email: document.getElementById('c-email').value.trim(),
-                    phone: {
-                        number: document.getElementById('c-tel').value.replace(/\D/g, '')
-                    }
-                },
-                back_urls: {
-                    success: window.location.href,
-                    failure: window.location.href,
-                    pending: window.location.href
-                },
-                auto_return: "approved",
-                notification_url: "https://seu-backend.com/notifications", // Webhook para notificações
-                external_reference: currentOrderId,
-                statement_descriptor: CONFIG.LOJA_NOME.substring(0, 22)
-            };
-            
-            // Adicionar frete como item adicional
-            if (freteSelecionado && freteSelecionado.price > 0) {
-                preferenceData.items.push({
-                    title: `Frete - ${freteSelecionado.name}`,
-                    quantity: 1,
-                    currency_id: 'BRL',
-                    unit_price: parseFloat(freteSelecionado.price)
-                });
-            }
-            
-            // Aqui você faria a chamada para seu servidor:
-            // const response = await fetch('/api/mercadopago/create-preference', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify(preferenceData)
-            // });
-            
-            // const data = await response.json();
-            // mercadoPagoPreferenceId = data.id;
-            
-            // Para demonstração, vou simular um ID de preferência
-            mercadoPagoPreferenceId = 'mock-' + Date.now();
-            
-            return `https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=${mercadoPagoPreferenceId}`;
-            
-        } catch (error) {
-            console.error("Erro ao gerar link de pagamento:", error);
-            return null;
-        }
     }
 
     // ENVIO PARA WHATSAPP COM LINK DE PAGAMENTO
@@ -1561,157 +1531,112 @@
         // Gerar ID do pedido
         currentOrderId = 'PED' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 100).toString().padStart(2, '0');
         
-        // Gerar link de pagamento do Mercado Pago
-        showPaymentStatus('processing', 'Gerando link de pagamento...', 'Aguarde enquanto preparamos seu pagamento.');
-        
-        const linkPagamento = await gerarLinkPagamentoMercadoPago();
-        
-        if (!linkPagamento) {
-            showPaymentStatus('error', 'Erro no pagamento', 'Não foi possível gerar o link de pagamento. Tente novamente ou entre em contato.');
-            return;
-        }
-        
         // Calcular totais
         const subtotal = Object.values(cart).reduce((total, item) => total + (item.price * item.qty), 0);
-        const total = subtotal + freteSelecionado.price;
+        const freteValor = freteSelecionado.price;
+        const total = subtotal + freteValor;
         
         // Construir mensagem para WhatsApp
-        let msg = `*${CONFIG.LOJA_NOME}*%0A`;
-        msg += `*🛒 NOVO PEDIDO - PRONTO PARA PAGAMENTO*%0A`;
-        msg += `*Pedido:* ${currentOrderId}%0A`;
-        msg += `*Data:* ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR').slice(0,5)}%0A%0A`;
+        let msg = `*${CONFIG.LOJA_NOME}*\n`;
+        msg += `*🛒 NOVO PEDIDO - AGUARDANDO PAGAMENTO*\n`;
+        msg += `*Pedido:* ${currentOrderId}\n`;
+        msg += `*Data:* ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR').slice(0,5)}\n\n`;
         
-        msg += `*👤 DADOS DO CLIENTE:*%0A`;
-        msg += `Nome: ${nome}%0A`;
-        msg += `Telefone: ${telefone}%0A`;
-        msg += `E-mail: ${email}%0A%0A`;
+        msg += `*👤 DADOS DO CLIENTE:*\n`;
+        msg += `Nome: ${nome}\n`;
+        msg += `Telefone: ${telefone}\n`;
+        msg += `E-mail: ${email}\n\n`;
         
         if (freteSelecionado.id !== 'retirada') {
-            msg += `*📦 ENDEREÇO DE ENTREGA:*%0A`;
-            msg += `CEP: ${cep}%0A`;
+            msg += `*📦 ENDEREÇO DE ENTREGA:*\n`;
+            msg += `CEP: ${cep}\n`;
             
             if (enderecoCliente.rua) {
-                msg += `Endereço: ${enderecoCliente.rua}, ${numero}%0A`;
+                msg += `Endereço: ${enderecoCliente.rua}, ${numero}\n`;
                 const complemento = document.getElementById('c-comp').value.trim();
-                if (complemento) msg += `Complemento: ${complemento}%0A`;
-                if (enderecoCliente.bairro) msg += `Bairro: ${enderecoCliente.bairro}%0A`;
-                if (enderecoCliente.cidade) msg += `Cidade: ${enderecoCliente.cidade}%0A`;
-                if (enderecoCliente.estado) msg += `Estado: ${enderecoCliente.estado}%0A`;
+                if (complemento) msg += `Complemento: ${complemento}\n`;
+                if (enderecoCliente.bairro) msg += `Bairro: ${enderecoCliente.bairro}\n`;
+                if (enderecoCliente.cidade) msg += `Cidade: ${enderecoCliente.cidade}\n`;
+                if (enderecoCliente.estado) msg += `Estado: ${enderecoCliente.estado}\n`;
             }
-            msg += `%0A`;
+            msg += `\n`;
         }
         
-        msg += `*🚚 OPÇÃO DE ENTREGA:*%0A`;
-        msg += `${freteSelecionado.name}%0A`;
-        msg += `Prazo: ${freteSelecionado.delivery_time}%0A`;
-        msg += `Valor: R$ ${freteSelecionado.price.toFixed(2).replace('.', ',')}%0A`;
+        msg += `*🚚 OPÇÃO DE ENTREGA:*\n`;
+        msg += `${freteSelecionado.name}\n`;
+        msg += `Prazo: ${freteSelecionado.delivery_time}\n`;
+        msg += `Valor: R$ ${freteSelecionado.price.toFixed(2).replace('.', ',')}\n`;
+        
+        if (freteSelecionado.details) {
+            msg += `Obs: ${freteSelecionado.details}\n`;
+        }
         
         if (freteSelecionado.id === 'retirada') {
-            msg += `Local: ${CONFIG.LOJA_ENDERECO}%0A%0A`;
+            msg += `Local: ${CONFIG.LOJA_ENDERECO}\n\n`;
         }
         
-        msg += `%0A*🛍️ RESUMO DO PEDIDO:*%0A`;
-        msg += `════════════════════════%0A`;
+        msg += `\n*🛍️ RESUMO DO PEDIDO:*\n`;
+        msg += `════════════════════════\n`;
         Object.values(cart).forEach(i => {
-            msg += `*${i.name}*%0A`;
-            msg += `Quantidade: ${i.qty} unidade(s)%0A`;
-            msg += `Valor unitário: R$ ${i.price.toFixed(2).replace('.', ',')}%0A`;
-            msg += `Subtotal: R$ ${(i.price * i.qty).toFixed(2).replace('.', ',')}%0A`;
-            msg += `════════════════════════%0A`;
+            msg += `*${i.name}*\n`;
+            msg += `Quantidade: ${i.qty} unidade(s)\n`;
+            msg += `Valor unitário: R$ ${i.price.toFixed(2).replace('.', ',')}\n`;
+            msg += `Subtotal: R$ ${(i.price * i.qty).toFixed(2).replace('.', ',')}\n`;
+            msg += `────────────────────────\n`;
         });
         
-        msg += `%0A*💰 VALORES:*%0A`;
-        msg += `Subtotal produtos: R$ ${subtotal.toFixed(2).replace('.', ',')}%0A`;
-        msg += `Frete: R$ ${freteSelecionado.price.toFixed(2).replace('.', ',')}%0A`;
-        msg += `*TOTAL: R$ ${total.toFixed(2).replace('.', ',')}*%0A%0A`;
+        msg += `\n*💰 VALORES:*\n`;
+        msg += `Subtotal produtos: R$ ${subtotal.toFixed(2).replace('.', ',')}\n`;
+        msg += `Frete: R$ ${freteSelecionado.price.toFixed(2).replace('.', ',')}\n`;
         
-        msg += `*💳 LINK PARA PAGAMENTO:*%0A`;
-        msg += `${linkPagamento}%0A%0A`;
+        if (taxaAdicional > 0 && freteSelecionado.id === 'brasil') {
+            msg += `Taxa adicional: R$ ${taxaAdicional.toFixed(2).replace('.', ',')} (já incluída no frete)\n`;
+        }
         
-        msg += `📍 *Loja:* ${CONFIG.LOJA_ENDERECO}%0A`;
-        msg += `📞 *Contato:* ${CONFIG.LOJA_TELEFONE}%0A%0A`;
+        msg += `*TOTAL DO PEDIDO: R$ ${total.toFixed(2).replace('.', ',')}*\n\n`;
         
-        msg += `════════════════════════%0A`;
-        msg += `*📝 INSTRUÇÕES:*%0A`;
-        msg += `1️⃣ *Clique no link acima para pagar*%0A`;
-        msg += `2️⃣ *Após o pagamento, envie o comprovante aqui*%0A`;
-        msg += `3️⃣ *Seu pedido será enviado em até 24h após confirmação*%0A`;
-        msg += `════════════════════════%0A`;
+        msg += `*💳 INFORMAÇÕES DE PAGAMENTO:*\n`;
+        msg += `Assim que recebermos este pedido, enviaremos o link de pagamento (Mercado Pago / Pix) para você finalizar a compra.\n\n`;
         
-        // Mostrar status de confirmação
-        showPaymentStatus('whatsapp', 'Link de Pagamento Gerado!', 
-            `Seu pedido #${currentOrderId} está pronto. O link de pagamento foi gerado e será enviado pelo WhatsApp.`);
+        msg += `📍 *Loja:* ${CONFIG.LOJA_ENDERECO}\n`;
+        msg += `📞 *Contato:* ${CONFIG.LOJA_TELEFONE}\n\n`;
         
-        // Adicionar botão para abrir WhatsApp com a mensagem
-        document.getElementById('whatsappButton').onclick = function() {
-            window.open(`https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${msg}`, '_blank');
+        msg += `════════════════════════\n`;
+        msg += `*📝 PRÓXIMOS PASSOS:*\n`;
+        msg += `1️⃣ *Aguardar nosso contato com o link de pagamento*\n`;
+        msg += `2️⃣ *Realizar o pagamento pelo link enviado*\n`;
+        msg += `3️⃣ *Enviar o comprovante para este mesmo WhatsApp*\n`;
+        msg += `4️⃣ *Seu pedido será separado e enviado*\n`;
+        msg += `════════════════════════\n`;
+        
+        // Codificar para URL
+        const msgEncoded = encodeURIComponent(msg);
+        
+        // Abrir WhatsApp em nova aba
+        window.open(`https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${msgEncoded}`, '_blank', 'noopener,noreferrer');
+        
+        // Mostrar mensagem de confirmação
+        alert(`Pedido #${currentOrderId} gerado! Agora é só aguardar nosso contato no WhatsApp com o link de pagamento.`);
+        
+        // Limpar carrinho após envio
+        setTimeout(() => {
+            cart = {};
+            freteSelecionado = null;
+            taxaAdicional = 0;
+            renderCartUI();
+            updateTotais();
+            toggleCart();
             
-            // Limpar carrinho após envio
-            setTimeout(() => {
-                cart = {};
-                renderCartUI();
-                updateTotais();
-                toggleCart();
-            }, 1000);
-        };
-        
-        // Mostrar botão do WhatsApp
-        document.getElementById('whatsappButton').style.display = 'flex';
-    }
-
-    // MERCADO PAGO CHECKOUT DIRETO
-    async function checkoutMercadoPago() {
-        const nome = document.getElementById('c-nome').value.trim();
-        const email = document.getElementById('c-email').value.trim();
-        const telefone = document.getElementById('c-tel').value.trim();
-        
-        if(!nome || Object.keys(cart).length === 0) {
-            alert("Por favor, preencha seu nome e adicione produtos.");
-            return;
-        }
-        
-        if (!email) {
-            alert("Por favor, informe seu e-mail.");
-            return;
-        }
-        
-        if (!telefone) {
-            alert("Por favor, informe seu telefone.");
-            return;
-        }
-        
-        if (!freteSelecionado) {
-            alert("Por favor, selecione uma opção de frete.");
-            return;
-        }
-        
-        showPaymentStatus('processing', 'Processando pagamento...', 'Aguarde enquanto preparamos seu pagamento.');
-        
-        // Gerar pedido
-        currentOrderId = 'MP' + Date.now().toString().slice(-6);
-        
-        // Em produção, você usaria a SDK do Mercado Pago
-        // Inicializar Mercado Pago
-        const mp = new MercadoPago(CONFIG.MP_PUBLIC_KEY, {
-            locale: 'pt-BR'
-        });
-        
-        try {
-            // Em um ambiente real, você faria uma chamada para seu backend
-            // Para criar a preferência no Mercado Pago
-            const linkPagamento = await gerarLinkPagamentoMercadoPago();
-            
-            if (linkPagamento) {
-                // Redirecionar para o pagamento
-                window.location.href = linkPagamento;
-            } else {
-                showPaymentStatus('error', 'Erro no pagamento', 'Não foi possível processar o pagamento. Tente novamente.');
-            }
-            
-        } catch (error) {
-            console.error("Erro no Mercado Pago:", error);
-            showPaymentStatus('error', 'Erro no pagamento', 'Não foi possível processar o pagamento. Tente novamente ou use o WhatsApp.');
-        }
+            // Limpar campos
+            document.getElementById('c-nome').value = '';
+            document.getElementById('c-email').value = '';
+            document.getElementById('c-tel').value = '';
+            document.getElementById('c-cep').value = '';
+            document.getElementById('c-num').value = '';
+            document.getElementById('c-comp').value = '';
+            document.getElementById('cep-input').value = '';
+            document.getElementById('opcoes-frete').innerHTML = '';
+        }, 1000);
     }
 
     // STATUS DE PAGAMENTO
@@ -1813,11 +1738,11 @@
     }
 
     function abrirWhatsAppSuporte() {
-        window.open(`https://wa.me/${CONFIG.WHATSAPP_SUPORTE}?text=Olá! Gostaria de informações sobre os produtos.`, '_blank');
+        window.open(`https://wa.me/${CONFIG.WHATSAPP_SUPORTE}?text=Olá! Gostaria de informações sobre os produtos.`, '_blank', 'noopener,noreferrer');
     }
 
     function abrirInstagram() {
-        window.open(CONFIG.INSTAGRAM_URL, '_blank');
+        window.open(CONFIG.INSTAGRAM_URL, '_blank', 'noopener,noreferrer');
     }
 
     function loadImageWithFallback(imgElement, productId, fallbackIndex) {
